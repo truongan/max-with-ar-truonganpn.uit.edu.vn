@@ -322,6 +322,32 @@ MoveWindow.prototype = {
 		}
 	},
 
+
+	_dump : function(arr,level) {
+		var dumped_text = "";
+		if(!level) level = 0;
+		
+		//The padding given at the beginning of the line.
+		var level_padding = "";
+		for(var j=0;j<level+1;j++) level_padding += ".\t";
+		
+		if(typeof(arr) == 'object') { //Array/Hashes/Objects 
+			for(var item in arr) {
+				var value = arr[item];
+				
+				if(typeof(value) == 'object') { //If it is an array,
+					dumped_text += level_padding + "'" + item + "' ...\n";
+					dumped_text += this._dump(value,level+1);
+				} else {
+					dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
+				}
+			}
+		} else { //Stings/Chars/Numbers etc.
+			dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
+		}
+		return dumped_text;
+	},
+
 	maximize: function() {
 		if (!text) {
 			text = new St.Label({ style_class: 'helloworld-label', text: "Hello, world!" });
@@ -353,44 +379,85 @@ MoveWindow.prototype = {
 
 		let pos = win.get_outer_rect();
 
-
-		//this._resize(win, s.x, sizes[useIndex].y, s.totalWidth * -1, sizes[useIndex].height);
-
-		/*	Move to side code
-				this._resize(win, sizes[useIndex].x, s.y
-				, sizes[useIndex].width
-				, s.totalHeight * -1);
-		*/
-
 		let new_width = -1;
 		let new_height = -1;
-		let size;
+		let new_x = 0;
+		let new_y = 0;
+		let useIndex = 0, maximize_flags = 0;
+		let sizes;
 		//asume we maxiize to s.totalWidth, the corrospondent height will be:
 		let max_height = s.totalWidth * pos.height / pos.width;
 
+		log( 's.east ', this._dump(s.east));
+		log( 's.north ', this._dump(s.north));
+
 		if (max_height > s.totalHeight) {
-			//we can afford max_height, maximize to totalHeight
+			//we can't afford max_height, maximize to totalHeight
+			new_height = s.totalHeight ;
 			new_width = s.totalHeight * pos.width / pos.height;
-			new_height = s.totalHeight;
-			sizes = s.east;
+
+			maximize_flags = maximize_flags | Meta.MaximizeFlags.VERTICAL; //maximize vertical only
+
+			sizes = s.west;
+			for ( let i=0; i < sizes.length; i++) {
+				if (this._samePoint(pos.height, sizes[i].height) && this._samePoint(pos.y, sizes[i].y)) {
+					useIndex = i + 1;
+					if (useIndex >= sizes.length) {
+						useIndex =  0;
+					}
+					break;
+				}
+			}
+
+			//this._resize(win, sizes[useIndex].x, s.y, sizes[useIndex].width, s.totalHeight * -1);
+
+			new_x = sizes[useIndex].x, new_y = s.y;
 		} else {
-			new_width = s.totalWidth;
+			new_width = s.totalWidth ;
 			new_height = max_height;
 			sizes = s.north;
-		}
-
-		let useIndex = 0;
-		for ( let i=0; i < sizes.length; i++) {
-			if (this._samePoint(pos.height, sizes[i].height) && this._samePoint(pos.y, sizes[i].y)) {
-				useIndex = i + 1;
-				if (useIndex >= sizes.length) {
-					useIndex =  0;
+			
+			maximize_flags = maximize_flags | Meta.MaximizeFlags.HORIZONTAL;
+			
+			for ( let i=0; i < sizes.length; i++) {
+				if (this._samePoint(pos.height, sizes[i].height) && this._samePoint(pos.y, sizes[i].y)) {
+					useIndex = i + 1;
+					if (useIndex >= sizes.length) {
+						useIndex =  0;
+					}
+					break;
 				}
-				break;
 			}
+
+			if (new_height == sizes[useIndex].height) //if we got the max height, set max flags
+				maximize_flags = maximize_flags | Meta.MaximizeFlags.VERTICAL;
+
+			//this._resize(win, s.x, sizes[useIndex].y, s.totalWidth * -1, sizes[useIndex].height);
+			new_x = s.x ; new_y = sizes[useIndex].y;
 		}
 
-		this._resize(win, s.x, sizes[useIndex].y, new_height, new_width);
+		
+		log('maximize_flags ', maximize_flags);
+		log('new_x ' + new_x);
+		log('new_y ' + new_y);		
+		log('new_height ' + new_height);
+		log('new_width ' + new_width);
+
+		//this._resize(win, new_x, new_y, new_height, new_width);
+	
+		win.maximize(maximize_flags);
+		
+		// snap, x, y
+		if (win.decorated) {
+			win.move_frame(true, new_x, new_y);
+		} else {
+			win.move(true, new_x, new_y);
+		}
+
+		let padding = this._getPadding(win);
+		// snap, width, height, force
+		
+		win.resize(true, new_width - padding.width, new_height - padding.height);
 
 	},
 
