@@ -13,7 +13,7 @@ const Shell = imports.gi.Shell;
 
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Utils = Extension.imports.utils;
-//const MoveFocus = Extension.imports.moveFocus;
+
 
 /**
  * Thanks to:
@@ -84,7 +84,7 @@ MoveWindow.prototype = {
 		tbHeight = tbHeight / 2;
 
 		let i = 0;
-		let widths  = this._utils.getWestWidths();
+		let widths = this._utils.getWestWidths();
 		s.west = [];
 		for ( i=0; i < widths.length; i++) {
 			s.west[i] = {
@@ -124,6 +124,8 @@ MoveWindow.prototype = {
 
 		return s;
 	},
+
+
 
 		/**
 	 * Checks the _screens array, and returns the index of the screen, the
@@ -320,7 +322,7 @@ MoveWindow.prototype = {
 		}
 	},
 
-	maxmize: function() {
+	maximize: function() {
 		if (!text) {
 			text = new St.Label({ style_class: 'helloworld-label', text: "Hello, world!" });
 			Main.uiGroup.add_actor(text);
@@ -350,7 +352,32 @@ MoveWindow.prototype = {
 		s = this._recalculateSizes(s);
 
 		let pos = win.get_outer_rect();
-		let sizes = direction == "n" ? s.north : s.south;
+
+
+		//this._resize(win, s.x, sizes[useIndex].y, s.totalWidth * -1, sizes[useIndex].height);
+
+		/*	Move to side code
+				this._resize(win, sizes[useIndex].x, s.y
+				, sizes[useIndex].width
+				, s.totalHeight * -1);
+		*/
+
+		let new_width = -1;
+		let new_height = -1;
+		let size;
+		//asume we maxiize to s.totalWidth, the corrospondent height will be:
+		let max_height = s.totalWidth * pos.height / pos.width;
+
+		if (max_height > s.totalHeight) {
+			//we can afford max_height, maximize to totalHeight
+			new_width = s.totalHeight * pos.width / pos.height;
+			new_height = s.totalHeight;
+			sizes = s.east;
+		} else {
+			new_width = s.totalWidth;
+			new_height = max_height;
+			sizes = s.north;
+		}
 
 		let useIndex = 0;
 		for ( let i=0; i < sizes.length; i++) {
@@ -363,34 +390,8 @@ MoveWindow.prototype = {
 			}
 		}
 
-		//this._resize(win, s.x, sizes[useIndex].y, s.totalWidth * -1, sizes[useIndex].height);
-
-/*	Move to side code
-		this._resize(win, sizes[useIndex].x, s.y
-		, sizes[useIndex].width
-		, s.totalHeight * -1);
-*/
-
-		let new_width = -1;
-		let new_height = -1;
-		//asume we maxiize to s.totalWidth, the corrospondent height will be:
-		let max_height = s.totalWidth * pos.height / pos.width;
-
-		if (max_height > s.totalHeight) {
-			//we can afford max_height, maximize to totalHeight
-			new_width = s.totalHeight * pos.width / pos.height;
-			new_height = s.totalHeight;
-		} else {
-			new_width = s.totalWidth;
-			new_height = max_height;
-		}
-
 		this._resize(win, s.x, sizes[useIndex].y, new_height, new_width);
 
-		this._resize(win, s.x, sizes[useIndex].y
-				, s.totalWidth * -1 //width
-				, sizes[useIndex].height //height
-			);
 	},
 
 
@@ -489,6 +490,7 @@ MoveWindow.prototype = {
 	 **/
 	_init: function() {
 		// read configuration and init the windowTracker
+
 		this._utils = new Utils.Utils();
 		this._windowTracker = Shell.WindowTracker.get_default();
 
@@ -502,6 +504,8 @@ MoveWindow.prototype = {
 		this._addKeyBinding("maximize",
 			Lang.bind(this, function(){ this.maxmize();})
 		);
+
+
 
 		// move to n, e, s an w
 		// this._addKeyBinding("put-to-side-n",
@@ -561,37 +565,41 @@ MoveWindow.prototype = {
 		}
 	}
 }
-let button;
+let text, button, mw;
 
 function init(meta) {
 
 };
 
 function outside_max(){
-			if (!text) {
-			text = new St.Label({ style_class: 'helloworld-label', text: "Hello, world!" });
-			Main.uiGroup.add_actor(text);
-		}
 
-		text.opacity = 255;
+//	this._moveWindow.destroy();	
+//	this._moveWindow.destroy();
+	//this._moveWindow.maximize();
+	Extension.stateObj._moveWindow.maximize();
 
-		let monitor = Main.layoutManager.primaryMonitor;
+	if (!text) {
+		text = new St.Label({ style_class: 'helloworld-label', text: "Hello, world!" });
+		Main.uiGroup.add_actor(text);
+	}
 
-		text.set_position(Math.floor(monitor.width / 2 - text.width / 2),
-						  Math.floor(monitor.height / 2 - text.height / 2));
+	text.opacity = 255;
 
-		Tweener.addTween(text,
-					 { opacity: 0,
-					   time: 2,
-					   transition: 'easeOutQuad',
-					   onComplete: _hideHello });
-		
-	this._moveWindow.maximize();
+	let monitor = Main.layoutManager.primaryMonitor;
+
+	text.set_position(Math.floor(monitor.width / 2 - text.width / 2),
+					  Math.floor(monitor.height / 2 - text.height / 2));
+
+	Tweener.addTween(text,
+				 { opacity: 0,
+				   time: 2,
+				   transition: 'easeOutQuad',
+				   onComplete: _hideHello });
 }
 
 function enable() {
 	this._moveWindow = new MoveWindow();
-	
+
 	button = new St.Bin({ style_class: 'panel-button',
 					  reactive: true,
 					  can_focus: true,

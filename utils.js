@@ -98,6 +98,35 @@ Utils.prototype = {
 			this.showErrorMessage("Error saving settings ", e);
 		}
 	},
+
+	
+	getNorthHeights: function() {
+		let ret = this._addToArray([], 50 / 100);
+		ret = this._addToArray(ret, 66 / 100);
+		ret = this._addToArray(ret, 34 / 100);
+		return ret;
+	},
+
+	getSouthHeights: function() {
+		let ret = this._addToArray([], 50 / 100);
+		ret = this._addToArray(ret, 34 / 100);
+		ret = this._addToArray(ret, 66 / 100);
+		return ret;
+	},
+
+	getWestWidths: function() {
+		let ret = this._addToArray([], 50 / 100);
+		ret = this._addToArray(ret, 34 / 100);
+		ret = this._addToArray(ret, 66 / 100);
+		return ret;
+	},
+
+	getEastWidths: function() {
+		let ret = this._addToArray([], 50 / 100);
+		ret = this._addToArray(ret, 66 / 100);
+		ret = this._addToArray(ret, 34 / 100);
+		return ret;
+	},
 	
 	_addToArray: function(array, value) {
 		if (array.indexOf(value) == -1) {
