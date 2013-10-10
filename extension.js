@@ -441,8 +441,6 @@ function init(meta) {
 
 function outside_max(){
 
-//	this._moveWindow.destroy();	
-//	this._moveWindow.destroy();
 	//this._moveWindow.maximize();
 	Extension.stateObj._moveWindow.maximize();
 
