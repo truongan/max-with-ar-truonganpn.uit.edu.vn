@@ -349,6 +349,7 @@ MoveWindow.prototype = {
 	},
 
 	maximize: function() {
+		log("\n------- start max with ar ----- \n");
 		if (!text) {
 			text = new St.Label({ style_class: 'helloworld-label', text: "Hello, world!" });
 			Main.uiGroup.add_actor(text);
@@ -388,6 +389,8 @@ MoveWindow.prototype = {
 		//asume we maxiize to s.totalWidth, the corrospondent height will be:
 		let max_height = s.totalWidth * pos.height / pos.width;
 
+		log('pos.height ', pos.height); 
+		log('pos.width ', pos.width);
 		log( 's.east ', this._dump(s.east));
 		log( 's.north ', this._dump(s.north));
 
