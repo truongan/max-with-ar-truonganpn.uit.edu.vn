@@ -150,99 +150,6 @@ MoveWindow.prototype = {
 	},
 
 
-	/**
-	 * Moves win, that is currently on screen[screenIndex] in the given direction.
-	 * Depending on ALWAYS_USE_WIDTHS config and screen setup, the window is either
-	 * moved to other screen or only resized.
-	 *
-	 * @param win The window that must be moved
-	 * @param screenIndex The screen the window belongs to (this._screens)
-	 * @param direction The two available sides e/w (i.e. east/west)
-	 */
-	_moveToSide: function(win, screenIndex, direction) {
-
-		let s = this._screens[screenIndex];
-		let pos = win.get_outer_rect();
-		let sizes = direction == "e" ? s.east : s.west;
-
-		if (win.maximized_horizontally && this._utils.getBoolean(this._utils.INTELLIGENT_CORNER_MOVEMENT, false)) {
-			// currently at the left side (WEST)
-			if (pos.y == s.y) {
-				this._moveToCorner(win, screenIndex, "n" + direction, false, true, true);
-			} else {
-				this._moveToCorner(win, screenIndex, "s" + direction, false, true, true);
-			}
-			return;
-		}
-
-		let useIndex = 0;
-		for ( let i=0; i < sizes.length; i++) {
-			if (this._samePoint(pos.width, sizes[i].width) && this._samePoint(pos.x, sizes[i].x)) {
-				useIndex = i + 1;
-				if (useIndex >= sizes.length) {
-					useIndex =  0;
-				}
-				break;
-			}
-		}
-
-		let otherDirection = "e";
-		let canMoveScreen = screenIndex > 0;
-		if (direction == "e") {
-			otherDirection = "w";
-			canMoveScreen = screenIndex < (this._screens.length - 1);
-		}
-
-		if (useIndex > 0 && canMoveScreen && !this._utils.getBoolean(this._utils.ALWAYS_USE_WIDTHS)) {
-			// moved in this direction more then once, if a screen exists, move the window there
-			if (useIndex > 1) {
-				// the window was moved here from an other screen, just resize it
-				useIndex = 0;
-			} else {
-				// moving to other screen is possible, move to screen and resize afterwards
-				this._moveToScreen(direction);
-				this._moveFocused(otherDirection);
-				return;
-			}
-		}
-
-		this._resize(win, sizes[useIndex].x, s.y, sizes[useIndex].width, s.totalHeight * -1);
-	},
-
-	_moveNorthSouth: function(win, screenIndex, direction) {
-		let s = this._screens[screenIndex];
-		let pos = win.get_outer_rect();
-		let sizes = direction == "n" ? s.north : s.south;
-
-		if ( win.maximized_vertically && this._utils.getBoolean(this._utils.INTELLIGENT_CORNER_MOVEMENT, false)) {
-			// currently at the left side (WEST)
-			if (pos.x == s.x) {
-				this._moveToCorner(win, screenIndex, "w" + direction, true, false, true);
-			} else {
-				this._moveToCorner(win, screenIndex, "e" + direction, true, false, true);
-			}
-			return;
-		}
-
-		let useIndex = 0;
-		for ( let i=0; i < sizes.length; i++) {
-			if (this._samePoint(pos.height, sizes[i].height) && this._samePoint(pos.y, sizes[i].y)) {
-				useIndex = i + 1;
-				if (useIndex >= sizes.length) {
-					useIndex =  0;
-				}
-				break;
-			}
-		}
-
-		if (this._utils.getBoolean(this._utils.CENTER_KEEP_WIDTH, false) && this._isCenterWidth(screenIndex, pos)) {
-			this._resize(win, pos.x, sizes[useIndex].y, pos.width, sizes[useIndex].height);
-			return;
-		}
-
-		this._resize(win, s.x, sizes[useIndex].y, s.totalWidth * -1, sizes[useIndex].height);
-	},
-
 	_moveToCornerKeepSize: function(win, screenIndex, direction) {
 		let s = this._screens[screenIndex];
 		let pos = win.get_outer_rect();
@@ -274,53 +181,7 @@ MoveWindow.prototype = {
 		return true;
 	},
 
-	/**
-	 * move the current focused window into the given direction (c, n,e,s,w, ne, nw, sw, so)
-	 */
-	_moveFocused: function(where) {
-		let win = global.display.focus_window;
-		if (win == null) {
-			return;
-		}
 
-		let screenIndex = this._getCurrentScreenIndex(win);
-		let s = this._screens[screenIndex];
-		// check if we are on primary screen and if the main panel is visible
-		s = this._recalculateSizes(s);
-
-		if (where == "c") {
-			let pos = win.get_outer_rect();
-			let w = s.totalWidth * (this._utils.getNumber(this._utils.CENTER_WIDTH, 50) / 100),
-				h = s.totalHeight * (this._utils.getNumber(this._utils.CENTER_HEIGHT, 50) / 100),
-				x = s.x + (s.totalWidth - w) / 2,
-				y = s.y + (s.totalHeight - h) / 2,
-				sameHeight = this._samePoint(h, pos.height);
-
-			if (this._utils.getBoolean(this._utils.REVERSE_MOVE_CENTER, false)) {
-				if (win.maximized_horizontally && win.maximized_vertically) {
-					this._resize(win, x, y, w, h);
-				} else {
-					this._resize(win, s.x, s.y, s.totalWidth * -1, s.totalHeight * -1);
-				}
-			} else {
-				// do not check window.width. until i find get_size_hint(), or min_width..
-				// windows that have a min_width < our width will not be maximized (evolution for example)
-				if (this._samePoint(x, pos.x) && this._samePoint(y, pos.y) && sameHeight) {
-					// the window is alread centered -> maximize
-					this._resize(win, s.x, s.y, s.totalWidth * -1, s.totalHeight * -1);
-				} else {
-					// the window is not centered -> resize
-					this._resize(win, x, y, w, h);
-				}
-			}
-		} else if (where == "n" || where == "s") {
-			this._moveNorthSouth(win, screenIndex, where);
-		} else if (where == "e" || where == "w") {
-			this._moveToSide(win, screenIndex, where);
-		} else {
-			this._moveToCorner(win, screenIndex, where);
-		}
-	},
 
 
 	_dump : function(arr,level) {
@@ -474,42 +335,6 @@ MoveWindow.prototype = {
 		return (Math.abs(p1-p2) <= 40);
 	},
 
-	// actual resizing
-	_resize: function(win, x, y, width, height) {
-		let maximizeFlags = 0;
-		let unMaximizeFlags = 0;
-		if (height < 0) {
-			maximizeFlags = maximizeFlags | Meta.MaximizeFlags.VERTICAL;
-			height = 400; // dont resize to width, -1
-		} else {
-			unMaximizeFlags = unMaximizeFlags | Meta.MaximizeFlags.VERTICAL;
-		}
-
-		if (width < 0) {
-			maximizeFlags = maximizeFlags | Meta.MaximizeFlags.HORIZONTAL;
-			width = 400;  // dont resize to height, -1
-		} else {
-			unMaximizeFlags = unMaximizeFlags | Meta.MaximizeFlags.HORIZONTAL;
-		}
-
-		if (maximizeFlags != 0) {
-			win.maximize(maximizeFlags);
-		}
-		if (unMaximizeFlags != 0) {
-			win.unmaximize(unMaximizeFlags)
-		}
-
-		// snap, x, y
-		if (win.decorated) {
-			win.move_frame(true, x, y);
-		} else {
-			win.move(true, x, y);
-		}
-
-		let padding = this._getPadding(win);
-		// snap, width, height, force
-		win.resize(true, width - padding.width, height - padding.height);
-	},
 
 	// the difference between input and outer rect as object.
 	_getPadding: function(win) {
@@ -576,31 +401,6 @@ MoveWindow.prototype = {
 		);
 
 
-
-		// move to n, e, s an w
-		// this._addKeyBinding("put-to-side-n",
-		// 	Lang.bind(this, function(){ this._moveFocused("n");})
-		// );
-	 
-
-		// // move to  nw, se, sw, nw
-		// this._addKeyBinding("put-to-corner-ne",
-		// 	Lang.bind(this, function(){ this._moveFocused("ne");})
-		// );
-	 
-		// // move to center. fix 2 screen setup and resize to 50% 50%
-		// this._addKeyBinding("put-to-center",
-		// 	Lang.bind(this, function(){ this._moveFocused("c");})
-		// );
-
-		// this._addKeyBinding("put-to-location",
-		// 	Lang.bind(this, function() { this._moveToConfiguredLocation();} )
-		// );
-
-		// this._addKeyBinding("put-to-left-screen",
-		// 	Lang.bind(this, function() { this._moveToScreen("left");} )
-		// );
-
 	},
 
 	/**
@@ -630,9 +430,7 @@ MoveWindow.prototype = {
 		this._bindings = [];
 
 		this._utils.destroy();
-		if (this._moveFocusPlugin) {
-			this._moveFocusPlugin.destroy();
-		}
+
 	}
 }
 let text, button, mw;
