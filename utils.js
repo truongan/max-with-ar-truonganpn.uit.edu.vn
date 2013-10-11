@@ -66,7 +66,7 @@ Utils.prototype = {
 
 	loadSettings: function() {
 		let schema = Me.metadata['settings-schema'];
-
+		
 		const GioSSS = Gio.SettingsSchemaSource;
 
 		let schemaDir = Me.dir.get_child('schemas');

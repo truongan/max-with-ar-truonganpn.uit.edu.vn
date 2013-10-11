@@ -33,6 +33,31 @@ function _hideHello() {
     Main.uiGroup.remove_actor(text);
     text = null;
 }
+function dump(arr,level) {
+	var dumped_text = "";
+	if(!level) level = 0;
+	
+	//The padding given at the beginning of the line.
+	var level_padding = "";
+	for(var j=0;j<level+1;j++) level_padding += ".\t";
+	
+	if(typeof(arr) == 'object') { //Array/Hashes/Objects 
+		for(var item in arr) {
+			var value = arr[item];
+			
+			if(typeof(value) == 'object') { //If it is an array,
+				dumped_text += level_padding + "'" + item + "' ...\n";
+				dumped_text += dump(value,level+1);
+			} else {
+				dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
+			}
+		}
+	} else { //Stings/Chars/Numbers etc.
+		dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
+	}
+	return dumped_text;
+}
+
 
 MoveWindow.prototype = {
 
@@ -51,6 +76,7 @@ MoveWindow.prototype = {
 	 */
 	_addKeyBinding: function(key, handler) {
 		this._bindings.push(key);
+		//log('key + handler ' + dump(key) + "\n" + dump(handler));
 
 		if (Main.wm.addKeybinding && Shell.KeyBindingMode) { // introduced in 3.7.5
 			// Shell.KeyBindingMode.NORMAL | Shell.KeyBindingMode.MESSAGE_TRAY,
@@ -180,35 +206,7 @@ MoveWindow.prototype = {
 		}
 		return true;
 	},
-
-
-
-
-	_dump : function(arr,level) {
-		var dumped_text = "";
-		if(!level) level = 0;
-		
-		//The padding given at the beginning of the line.
-		var level_padding = "";
-		for(var j=0;j<level+1;j++) level_padding += ".\t";
-		
-		if(typeof(arr) == 'object') { //Array/Hashes/Objects 
-			for(var item in arr) {
-				var value = arr[item];
-				
-				if(typeof(value) == 'object') { //If it is an array,
-					dumped_text += level_padding + "'" + item + "' ...\n";
-					dumped_text += this._dump(value,level+1);
-				} else {
-					dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
-				}
-			}
-		} else { //Stings/Chars/Numbers etc.
-			dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
-		}
-		return dumped_text;
-	},
-
+	
 	maximize: function() {
 		log("\n------- start max with ar ----- \n");
 		if (!text) {
@@ -250,15 +248,14 @@ MoveWindow.prototype = {
 		//asume we maxiize to s.totalWidth, the corrospondent height will be:
 		let max_height = s.totalWidth * pos.height / pos.width;
 
-		log('pos.height ', pos.height); 
-		log('pos.width ', pos.width);
-		log( 's.east ', this._dump(s.east));
-		log( 's.north ', this._dump(s.north));
+		log('old pos.width x height ', pos.height + ' x ' +  pos.width); 
+		log( 's.east ', dump(s.east));
+		log( 's.north ', dump(s.north));
 
-		if (max_height > s.totalHeight) {
+		if (max_height > s.totalHeight - s.north[0].y) {
 			//we can't afford max_height, maximize to totalHeight
-			new_height = s.totalHeight ;
-			new_width = s.totalHeight * pos.width / pos.height;
+			new_height = s.totalHeight - s.north[0].y;
+			new_width = new_height * pos.width / pos.height;
 
 			maximize_flags = maximize_flags | Meta.MaximizeFlags.VERTICAL; //maximize vertical only
 
@@ -302,10 +299,9 @@ MoveWindow.prototype = {
 
 		
 		log('maximize_flags ', maximize_flags);
-		log('new_x ' + new_x);
-		log('new_y ' + new_y);		
-		log('new_height ' + new_height);
-		log('new_width ' + new_width);
+		log('new x,y ' + new_x + ', ' + new_y);
+		log('new width x height ' + new_height + ' x ' + new_width);
+		
 
 		//this._resize(win, new_x, new_y, new_height, new_width);
 	
@@ -322,7 +318,9 @@ MoveWindow.prototype = {
 		// snap, width, height, force
 		
 		win.resize(true, new_width - padding.width, new_height - padding.height);
-
+		
+		pos = win.get_outer_rect();
+		log('new real pos.width x height ', pos.height + ' x ' +  pos.width); 
 	},
 
 
@@ -396,10 +394,9 @@ MoveWindow.prototype = {
 
 		this._bindings = [];
 
-		this._addKeyBinding("maximize",
-			Lang.bind(this, function(){ this.maxmize();})
+		this._addKeyBinding("maximize-ar",
+			Lang.bind(this, function(){ this.maximize();})
 		);
-
 
 	},
 

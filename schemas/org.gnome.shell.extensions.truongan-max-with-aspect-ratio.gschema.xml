@@ -1,0 +1,11 @@
+<schemalist>
+  <schema id="org.gnome.shell.extensions.truongan-max-with-aspect-ratio" path="/org/gnome/shell/extensions/truongan-max-with-aspect-ratio/">
+    
+    <key type="as" name="maximize-ar">
+      <default><![CDATA[['<Super>KP_9']]]></default>
+      <summary>Maximize with aspect ratio</summary>
+    </key>
+    
+    
+  </schema>
+</schemalist>

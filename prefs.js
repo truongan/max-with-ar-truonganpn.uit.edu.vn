@@ -54,8 +54,7 @@ const temporary_widget_settings = new GObject.Class({
 
 	_createKeyboardConfig: function() {
 		return this._createBindingList({
-				"maximize": "Maximize with aspect ratio",
-				"restore": "Restore window",
+				"maximize-ar": "Maximize with aspect ratio"
 		});
 	},
 
