@@ -14,17 +14,6 @@ const Lang = imports.lang;
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
 const _ = Gettext.gettext;
 
-let createSlider = function(configName) {
-	let ret = new Gtk.Scale({digits: 0, sensitive: true, orientation: Gtk.Orientation.HORIZONTAL, margin_right: 6, margin_left: 6});
-	ret.set_range(0, 100);
-	ret.set_value(Utils.getNumber(configName, 50));
-	ret.set_value_pos(Gtk.PositionType.RIGHT);
-	ret.connect("value-changed", function(obj, userData) {
-		Utils.setParameter(configName, obj.get_value());
-	});
-	return ret;
-}
-
 
 const temporary_widget_settings = new GObject.Class({
 	Name: 'PutWindow.Prefs.temporary_widget_settings',
@@ -42,15 +31,6 @@ const temporary_widget_settings = new GObject.Class({
 
 	 },
 
-
-	_addSliders: function(grid, row, labels, configName) {
-		for (let i=0; i < labels.length; i++) {
-			row++;
-			grid.attach(new Gtk.Label({label: labels[i], halign:Gtk.Align.START, margin_left: 15 }), 0, row, 1, 1);
-			grid.attach(createSlider(configName + "-" + i), 1, row, 5, 1);
-		}
-		return row;
-	},
 
 	_createKeyboardConfig: function() {
 		return this._createBindingList({

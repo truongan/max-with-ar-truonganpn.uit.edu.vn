@@ -1,0 +1,8 @@
+{
+  "shell-version": ["3.4", "3.5.2", "3.6", "3.8", "3.10", "3.12"],
+  "uuid": "max-with-ar@truonganpn.uit.edu.vn",
+  "name": "Maximize window and keep aspect ratio",
+  "description": "Maximize window and keep aspect ratio \n Configurable shortcut key",
+  "url": "https://github.com/negesti/gnome-shell-extensions-negesti",
+  "settings-schema": "org.gnome.shell.extensions.truongan-max-with-aspect-ratio"
+}
