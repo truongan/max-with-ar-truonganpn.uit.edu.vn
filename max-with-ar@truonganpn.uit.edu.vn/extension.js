@@ -209,23 +209,8 @@ MoveWindow.prototype = {
 	
 	maximize: function() {
 		log("\n------- start max with ar ----- \n");
-		if (!text) {
-			text = new St.Label({ style_class: 'helloworld-label', text: "Hello, world!" });
-			Main.uiGroup.add_actor(text);
-		}
+		
 
-		text.opacity = 255;
-
-		let monitor = Main.layoutManager.primaryMonitor;
-
-		text.set_position(Math.floor(monitor.width / 2 - text.width / 2),
-						  Math.floor(monitor.height / 2 - text.height / 2));
-
-		Tweener.addTween(text,
-					 { opacity: 0,
-					   time: 2,
-					   transition: 'easeOutQuad',
-					   onComplete: _hideHello });
 		
 		let win = global.display.focus_window;
 		if (win == null) {
@@ -321,6 +306,24 @@ MoveWindow.prototype = {
 		
 		pos = win.get_outer_rect();
 		log('new real pos.width x height ', pos.height + ' x ' +  pos.width); 
+
+		if (!text) {
+			text = new St.Label({ style_class: 'helloworld-label', text: "Maximize" });
+			Main.uiGroup.add_actor(text);
+		}
+
+		text.opacity = 255;
+
+		let monitor = Main.layoutManager.primaryMonitor;
+
+		text.set_position(Math.floor(new_x + new_width / 2 - text.width / 2),
+						  Math.floor(new_y + new_height / 2 - text.height / 2));
+
+		Tweener.addTween(text,
+					 { opacity: 0,
+					   time: 2,
+					   transition: 'easeOutQuad',
+					   onComplete: _hideHello });
 	},
 
 
@@ -430,7 +433,7 @@ MoveWindow.prototype = {
 
 	}
 }
-let text, button, mw;
+let text, mw;
 
 function init(meta) {
 
@@ -443,5 +446,5 @@ function enable() {
 
 function disable(){
 	this._moveWindow.destroy();
-	Main.panel._leftBox.remove_child(button);
+	//Main.panel._leftBox.remove_child(button);
 };
