@@ -175,37 +175,6 @@ MoveWindow.prototype = {
 		return this._primary;
 	},
 
-
-	_moveToCornerKeepSize: function(win, screenIndex, direction) {
-		let s = this._screens[screenIndex];
-		let pos = win.get_outer_rect();
-
-		let x,y;
-
-		if (direction.indexOf("s") == -1) {
-			y = s.y;
-		} else {
-			y = (s.totalHeight - pos.height);
-		}
-
-		if (direction.indexOf("w") == -1) {
-			x = s.x + (s.totalWidth - pos.width);
-		} else {
-			x = s.x;
-		}
-
-		// window is already in the given corner
-		if (this._samePoint(pos.x, x) && this._samePoint(pos.y, y)) {
-			return false;
-		}
-
-		if (win.decorated) {
-			win.move_frame(true, x, y);
-		} else {
-			win.move(true, x, y);
-		}
-		return true;
-	},
 	
 	maximize: function() {
 		log("\n------- start max with ar ----- \n");
@@ -286,23 +255,8 @@ MoveWindow.prototype = {
 		log('new x,y ' + new_x + ', ' + new_y);
 		log('new width x height ' + new_height + ' x ' + new_width);
 		
-
-		//this._resize(win, new_x, new_y, new_height, new_width);
-	
 		win.maximize(maximize_flags);
-		
-		// snap, x, y
-		if (win.decorated) {
-			win.move_frame(true, new_x, new_y);
-		} else {
-			win.move(true, new_x, new_y);
-		}
 
-		//let padding = this._getPadding(win);
-		let padding = 0;
-		// snap, width, height, force
-		
-		//win.resize(true, new_width - padding.width, new_height - padding.height);
 		win.move_resize_frame(true, new_x, new_y, new_width, new_height);
 		
 		pos = win.get_outer_rect();
@@ -335,17 +289,6 @@ MoveWindow.prototype = {
 	// @return true, if the difference between p1 and p2 is less then 41
 	_samePoint: function(p1, p2) {
 		return (Math.abs(p1-p2) <= 40);
-	},
-
-
-	// the difference between input and outer rect as object.
-	_getPadding: function(win) {
-		let outer = win.get_outer_rect();
-		let inner = win.get_rect();
-		return {
-			width: (outer.width - inner.width),
-			height: (outer.height - inner.height)
-		};
 	},
 
 	counter: 0,
