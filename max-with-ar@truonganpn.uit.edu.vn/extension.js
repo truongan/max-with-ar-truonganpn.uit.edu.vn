@@ -298,10 +298,12 @@ MoveWindow.prototype = {
 			win.move(true, new_x, new_y);
 		}
 
-		let padding = this._getPadding(win);
+		//let padding = this._getPadding(win);
+		let padding = 0;
 		// snap, width, height, force
 		
-		win.resize(true, new_width - padding.width, new_height - padding.height);
+		//win.resize(true, new_width - padding.width, new_height - padding.height);
+		win.move_resize_frame(true, new_x, new_y, new_width, new_height);
 		
 		pos = win.get_outer_rect();
 		log('new real pos.width x height ', pos.height + ' x ' +  pos.width); 
