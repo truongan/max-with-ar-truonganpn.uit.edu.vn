@@ -209,9 +209,7 @@ MoveWindow.prototype = {
 	
 	maximize: function() {
 		log("\n------- start max with ar ----- \n");
-		
-
-		
+				
 		let win = global.display.focus_window;
 		if (win == null) {
 			return;
@@ -230,6 +228,7 @@ MoveWindow.prototype = {
 		let new_y = 0;
 		let useIndex = 0, maximize_flags = 0;
 		let sizes;
+		
 		//asume we maxiize to s.totalWidth, the corrospondent height will be:
 		let max_height = s.totalWidth * pos.height / pos.width;
 
